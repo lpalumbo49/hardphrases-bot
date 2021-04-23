@@ -3,6 +3,7 @@ import re
 import json
 import pymongo
 import logging
+import os
 
 #pip3 install dnspython
 #pip3 install pymongo
@@ -14,6 +15,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 valid_authors = ['chori', 'juan', 'kemero', 'lucho', 'lukas', 'otros']
+
+TOKEN = os.environ['TELEGRAM_TOKEN']
+MONGO_CONNECTION_STRING = os.environ['MONGO_CONNECTION_STRING']
 
 def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -71,13 +75,15 @@ def get_phrase(update, context):
         client.close()    
 
 def get_mongo_client():
-    return pymongo.MongoClient("mongodb+srv://meli:DlBun4ffoGUpXNuP@meliexercisecluster-iihbu.mongodb.net/test?retryWrites=true")
+    return pymongo.MongoClient(MONGO_CONNECTION_STRING)
     
 def beautify_response(p):
     return p['author'].capitalize() + ": " + p['phrase']
 
 def main():
-    updater = Updater('666959502:AAEcchkF1c6bNWWij_gPMusBU1ubhLT6RcI')
+    logger.info('Starting hardphrases-bot')
+
+    updater = Updater(TOKEN)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler('insert_phrase', insert_phrase))
     dp.add_handler(CommandHandler('get_phrase', get_phrase))
